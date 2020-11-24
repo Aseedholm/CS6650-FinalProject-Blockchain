@@ -1,1 +1,1 @@
-# CS66500-FinalProject-Blockchain
+# CS6650-FinalProject-Blockchain
