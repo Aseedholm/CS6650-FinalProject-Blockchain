@@ -5,7 +5,7 @@
 int main(int argc, char const *argv[])
 {
     int randomInt = rand();
-    int difficulty = 6;
+    int difficulty = 5;
     /* code */
     //(int blockIndexPassed, const std::string &blockDataPassed, const int blockMiningDifficultyPassed) 
     Miner miner(0, "Andrew sends bitcoins to someone else1", difficulty);

@@ -25,6 +25,20 @@ void Miner::mineBlock(const std::string previousHash) {
     do {
         blockNOnce++;
         blockHash = calculateHash(previousHash);
+        //to have a terminate signal. 
+        //can have a shared variable that tells thread to terminate.
+        //can use thread signalling maybe? 
+        //store receive socket function here, make it non-blocking. 
+        //or let them finish mining and then they can append the blcok and it'll fail. 
+        //at worst client will finish mining and then it'll send out theblock. 
+        //Depending on how block chain is implemeted server will just reject the block, 
+        //saying your hash doesn't match the latest blcok or server will create a new branch on 
+        //th chain and then we have two branches on the chain. Then we can let the users decide which branch wins -- 
+        //one soltuion would be that longer branch wins. 
+        //
+
+        //Proof of work is just grabbing the proposal number in terms of Paxos. 
+        //More complicated part is resolving conflicts so every node is in the same state. 
     } while (blockHash.substr(0, blockMiningDifficulity) != stringOfZereos);
 
     std::cout << "Block mined: " << blockHash << std::endl;
