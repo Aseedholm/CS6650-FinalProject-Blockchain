@@ -42,6 +42,7 @@ void Blockchain::receiveInformationFromClient(int port) {
         
         while(true) {
             clientListeningSocket.accept(serverConnectionToClient);
+            
             while(killCommand == 0) {
 
                 if(initialConnection == false) {
