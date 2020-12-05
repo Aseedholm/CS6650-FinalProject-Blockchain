@@ -9,6 +9,7 @@ Blockchain::Blockchain() {
     // blockChain[blockChain.size() - 1].printAll();
     // serverConnectionToClient;
     initialConnection = false;
+    serverToServerSocket.setBlocking(false);
     
 }
 
@@ -52,11 +53,19 @@ void Blockchain::receiveInformationFromClient(int port) {
                 
                 
                 serverConnectionToClient.receive(informationToBroadcast);
-                informationToBroadcast >> blockHash >> killCommand;
-                std::cout << "RECEIVED HASH: " << blockHash << "\nKillCommand: " << killCommand << std::endl;
-                informationToBroadcast.clear();
+                if(informationToBroadcast >> blockHash >> killCommand) {
+                    std::cout << "RECEIVED HASH FROM CLIENT: " << blockHash << "\nKillCommand: " << killCommand << std::endl;
+                    serverConnectionToClient.disconnect();
+                    serverToServerSocket.connect(sf::IpAddress::getLocalAddress(), 8080);
+                    serverToServerSocket.send(informationToBroadcast);
+                    informationToBroadcast.clear();
+                }
+                // informationToBroadcast >> blockHash >> killCommand;
+
             }
             initialConnection = false;
             killCommand = 0;
+            // clientListeningSocket.accept(serverToServerSocket);
+
         }
 }

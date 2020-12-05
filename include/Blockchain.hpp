@@ -17,6 +17,7 @@ class Blockchain {
         int serverId;
         sf::TcpListener clientListeningSocket; 
         sf::TcpSocket serverConnectionToClient;
+        sf::TcpSocket serverToServerSocket;
         sf::Socket::Status serverStatus;
         std::unique_ptr<sf::TcpSocket> otherServerSockets;
         std::map<int , struct ServerData> serverInfo;
