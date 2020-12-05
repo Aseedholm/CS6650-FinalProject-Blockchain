@@ -36,10 +36,11 @@ int main(int argc, char const *argv[])
 
     std::cout <<"FROM SERVER: \nIndex: " << index << "\nPrevious Hash: " << previousHash << std::endl;
 
+    sf::Uint32 killCommand = 1;
     packetP.clear();
-    // packetP << miner.getHash();
-    // sendToServer.send(packetP);
-
+    packetP << miner.getHash() << killCommand;
+    sendToServer.send(packetP);
+    packetP.clear();
 
     
     //statusInApp = clientSocketInApp.connect(ipAddress, port);
