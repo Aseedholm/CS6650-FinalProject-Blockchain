@@ -31,7 +31,7 @@ class Blockchain {
         //vector of ips
         //vector of ports 
     public:
-        Blockchain();
+        Blockchain(int port);
         // ~Blockchain();
         void addBlock(const Block& blockToBeAdded); //Method to add a block to the Server. 
         void sendBlock(); //This is the method to broadcast a block to other servers. 

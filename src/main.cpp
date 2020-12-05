@@ -7,8 +7,9 @@
 
 int main(int argc, char const *argv[])
 {
+    int port = std::atoi(argv[1]);
     int randomInt = rand();
-    int difficulty = 2;
+    int difficulty = 5;
     /* code */
     //(int blockIndexPassed, const std::string &blockDataPassed, const int blockMiningDifficultyPassed) 
     Miner miner(0, "Andrew sends bitcoins to someone else1", difficulty);
@@ -23,7 +24,7 @@ int main(int argc, char const *argv[])
     sf::TcpSocket sendToServer;
     sf::IpAddress ipAddress;
     ipAddress.getLocalAddress();
-    sendToServerStatus = sendToServer.connect(ipAddress, 8081);
+    sendToServerStatus = sendToServer.connect(ipAddress, port);
 
     sf::Packet packetP;
 
@@ -31,6 +32,7 @@ int main(int argc, char const *argv[])
 
     sf::Uint32 index;
     std::string previousHash;
+    std::string sender = "c";
 
     packetP >> index >> previousHash;
 
@@ -38,7 +40,7 @@ int main(int argc, char const *argv[])
 
     sf::Uint32 killCommand = 1;
     packetP.clear();
-    packetP << miner.getHash() << killCommand;
+    packetP << miner.getHash() << killCommand << sender;
     sendToServer.send(packetP);
     packetP.clear();
 

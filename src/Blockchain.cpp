@@ -1,6 +1,6 @@
 #include "Blockchain.hpp"
 
-Blockchain::Blockchain() {
+Blockchain::Blockchain(int port) {
     Block genesisBlock(0.0, 0, 0.0, "Genesis Block", "0", "1a2b3c4d5e6f7g8h9i", "Genesis Block");
     genesisBlock.printAll();
     addBlock(genesisBlock);
@@ -10,6 +10,7 @@ Blockchain::Blockchain() {
     // serverConnectionToClient;
     initialConnection = false;
     serverToServerSocket.setBlocking(false);
+    serverStatus = clientListeningSocket.listen(port);
     
 }
 
@@ -34,12 +35,13 @@ void Blockchain::sendInformationToClient() {
 }
 
 void Blockchain::receiveInformationFromClient(int port) {
-    serverStatus = clientListeningSocket.listen(port);
+    
     // serverConnectionToClient.setBlocking(false);
     // while(serverStatus == sf::Socket::Done) {
         std::string passedString;
         sf::Uint32 killCommand = 0;
         std::string blockHash;
+        std::string sender;
         
         while(true) {
             clientListeningSocket.accept(serverConnectionToClient);
@@ -53,12 +55,20 @@ void Blockchain::receiveInformationFromClient(int port) {
                 
                 
                 serverConnectionToClient.receive(informationToBroadcast);
-                if(informationToBroadcast >> blockHash >> killCommand) {
-                    std::cout << "RECEIVED HASH FROM CLIENT: " << blockHash << "\nKillCommand: " << killCommand << std::endl;
-                    serverConnectionToClient.disconnect();
-                    serverToServerSocket.connect(sf::IpAddress::getLocalAddress(), 8080);
-                    serverToServerSocket.send(informationToBroadcast);
-                    informationToBroadcast.clear();
+                if(informationToBroadcast >> blockHash >> killCommand >> sender) {
+                    std::cout << "\nRECEIVED HASH FROM CLIENT: " << blockHash << "\nKillCommand: " << killCommand << "\nSENDER: " << sender << std::endl;
+                    if (sender.compare("c") == 0) {
+                        
+                        serverConnectionToClient.disconnect();
+                        serverToServerSocket.connect(sf::IpAddress::getLocalAddress(), port);
+                        informationToBroadcast.clear();
+                        sender = "s";
+                        informationToBroadcast << blockHash << killCommand << sender;
+                        serverToServerSocket.send(informationToBroadcast);
+                        informationToBroadcast.clear();
+                        serverToServerSocket.disconnect();
+                    }
+
                 }
                 // informationToBroadcast >> blockHash >> killCommand;
 
