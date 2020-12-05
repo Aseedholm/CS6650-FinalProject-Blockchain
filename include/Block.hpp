@@ -2,6 +2,7 @@
 #define __BLOCK_HPP__
 #include <chrono>
 #include <string>
+#include <iostream>
 
 class Block{
 private:
@@ -20,14 +21,16 @@ public:
 
     // ~Block();
 
+    void printAll();
+
     //getters
-    const double getTimeSpentMining();
-    const int getBlockIndex();
-    const double getCreationTime();
-    const std::string getDataPassed();
-    const std::string getPreviousHash();
-    const std::string getBlockHash();
-    const std::string getClientName();
+    double getTimeSpentMining();
+    int getBlockIndex();
+    double getCreationTime();
+    std::string getDataPassed();
+    std::string getPreviousHash();
+    std::string getBlockHash();
+    std::string getClientName();
 
     //no setters since block is immutable, but it is supposed to be public. So information is accessible, but not changeable. 
 

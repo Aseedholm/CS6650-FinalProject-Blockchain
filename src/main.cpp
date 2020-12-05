@@ -18,26 +18,25 @@ int main(int argc, char const *argv[])
     std::cout << "\nMining Block 1 ..." << std::endl; 
     miner.mineBlock(std::to_string(randomInt));
 
-    Blockchain blockchain;
-    blockchain.receiveInformationFromClient(8080);
-    std::cout << "PAST BLOCK CHAIN" << std::endl; 
+
     sf::Socket::Status sendToServerStatus;
     sf::TcpSocket sendToServer;
     sf::IpAddress ipAddress;
     ipAddress.getLocalAddress();
-    sendToServerStatus = sendToServer.connect(ipAddress, 8080);
+    sendToServerStatus = sendToServer.connect(ipAddress, 8081);
+
     sf::Packet packetP;
 
-    // sendToServer.receive(packetP);
+    sendToServer.receive(packetP);
 
     sf::Uint32 index;
     std::string previousHash;
 
-    packetP << index << previousHash;
+    packetP >> index >> previousHash;
 
-    // std::cout <<"FROM SERVER: " << index << " " << previousHash << std::endl;
+    std::cout <<"FROM SERVER: \nIndex: " << index << "\nPrevious Hash: " << previousHash << std::endl;
 
-    // packetP.clear();
+    packetP.clear();
     // packetP << miner.getHash();
     // sendToServer.send(packetP);
 

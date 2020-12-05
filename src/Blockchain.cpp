@@ -2,7 +2,13 @@
 
 Blockchain::Blockchain() {
     Block genesisBlock(0.0, 0, 0.0, "Genesis Block", "0", "1a2b3c4d5e6f7g8h9i", "Genesis Block");
-    initialConnection = false;
+    genesisBlock.printAll();
+    addBlock(genesisBlock);
+    informationToBroadcast.clear();
+    // std::cout << blockChain.size() << std::endl;
+    // blockChain[blockChain.size() - 1].printAll();
+    // serverConnectionToClient;
+    // initialConnection = false;
     
 }
 
@@ -20,6 +26,7 @@ void Blockchain::setServerInfoData(sf::IpAddress ipAddressPassed, int portNumber
 
 
 void Blockchain::sendInformationToClient() {
+    std::cout << "BLOCK CHAIN SIZE: " << sf::Uint32(blockChain.size()) << "\nBLOCK CHAIN HASH: " << blockChain[blockChain.size() - 1].getBlockHash() << std::endl;
     informationToBroadcast << sf::Uint32(blockChain.size()) << blockChain[blockChain.size() - 1].getBlockHash();
     serverConnectionToClient.send(informationToBroadcast);
     informationToBroadcast.clear();
@@ -27,11 +34,11 @@ void Blockchain::sendInformationToClient() {
 
 void Blockchain::receiveInformationFromClient(int port) {
     serverStatus = clientListeningSocket.listen(port);
-    serverConnectionToClient.setBlocking(false);
+    // serverConnectionToClient.setBlocking(false);
     // while(serverStatus == sf::Socket::Done) {
         std::string passedString;
         clientListeningSocket.accept(serverConnectionToClient);
-        // sendInformationToClient();
+        sendInformationToClient();
         // serverConnectionToClient.receive(informationToBroadcast);
         // informationToBroadcast << passedString;
         // if(serverStatus == sf::Socket::Done) {
