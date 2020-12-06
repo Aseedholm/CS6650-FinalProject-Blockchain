@@ -56,17 +56,31 @@ void Blockchain::receiveInformationFromClient(int port) {
                 
                 serverConnectionToClient.receive(informationToBroadcast);
                 if(informationToBroadcast >> blockHash >> killCommand >> sender) {
-                    std::cout << "\nRECEIVED HASH FROM CLIENT: " << blockHash << "\nKillCommand: " << killCommand << "\nSENDER: " << sender << std::endl;
+                    
                     if (sender.compare("c") == 0) {
-                        
-                        serverConnectionToClient.disconnect();
+                        std::cout << "\nRECEIVED HASH FROM CLIENT: " << blockHash << "\nKillCommand: " << killCommand << "\nSENDER: " << sender << "\n" << std::endl;
+                        // serverConnectionToClient.disconnect();
                         serverToServerSocket.connect(sf::IpAddress::getLocalAddress(), port);
                         informationToBroadcast.clear();
                         sender = "s";
                         informationToBroadcast << blockHash << killCommand << sender;
                         serverToServerSocket.send(informationToBroadcast);
                         informationToBroadcast.clear();
-                        serverToServerSocket.disconnect();
+                        // serverToServerSocket.disconnect();
+                        //NEW BLOCK TO ATTEMPT TO REPLICATE
+                        //if new blocks index is already taken, then reject, if not then accept. 
+                        Block block(1.1, blockChain.size(), 5.5, sender, blockChain[blockChain.size() -1].getBlockHash(), blockHash, sender);
+                        addBlock(block);
+                        blockChain[blockChain.size() - 1].printAll();
+                        //NEW BLOCK TO ATTEMPT TO REPLICATE
+                    } else if(sender.compare("s") == 0) {
+                        std::cout << "\nRECEIVED HASH FROM SERVER: " << blockHash << "\nKillCommand: " << killCommand << "\nSENDER: " << sender << "\n" << std::endl;
+                        Block block(1.1, blockChain.size(), 5.5, sender, blockChain[blockChain.size() -1].getBlockHash(), blockHash, sender);
+                        addBlock(block);
+                        //NEW BLOCK REPLICATED
+                        blockChain[blockChain.size() - 1].printAll();
+                        //NEW BLOCK REPLICATED
+                        informationToBroadcast.clear();
                     }
 
                 }
