@@ -1,6 +1,6 @@
 #include "Blockchain.hpp"
 
-Blockchain::Blockchain() {
+Blockchain::Blockchain(int port) {
     Block genesisBlock(0.0, 0, 0.0, "Genesis Block", "0", "1a2b3c4d5e6f7g8h9i", "Genesis Block");
     genesisBlock.printAll();
     addBlock(genesisBlock);
@@ -9,6 +9,8 @@ Blockchain::Blockchain() {
     // blockChain[blockChain.size() - 1].printAll();
     // serverConnectionToClient;
     initialConnection = false;
+    serverToServerSocket.setBlocking(false);
+    serverStatus = clientListeningSocket.listen(port);
     
 }
 
@@ -33,12 +35,13 @@ void Blockchain::sendInformationToClient() {
 }
 
 void Blockchain::receiveInformationFromClient(int port) {
-    serverStatus = clientListeningSocket.listen(port);
+    
     // serverConnectionToClient.setBlocking(false);
     // while(serverStatus == sf::Socket::Done) {
         std::string passedString;
         sf::Uint32 killCommand = 0;
         std::string blockHash;
+        std::string sender;
         
         while(true) {
             clientListeningSocket.accept(serverConnectionToClient);
@@ -52,11 +55,41 @@ void Blockchain::receiveInformationFromClient(int port) {
                 
                 
                 serverConnectionToClient.receive(informationToBroadcast);
-                informationToBroadcast >> blockHash >> killCommand;
-                std::cout << "RECEIVED HASH: " << blockHash << "\nKillCommand: " << killCommand << std::endl;
-                informationToBroadcast.clear();
+                if(informationToBroadcast >> blockHash >> killCommand >> sender) {
+                    
+                    if (sender.compare("c") == 0) {
+                        std::cout << "\nRECEIVED HASH FROM CLIENT: " << blockHash << "\nKillCommand: " << killCommand << "\nSENDER: " << sender << "\n" << std::endl;
+                        // serverConnectionToClient.disconnect();
+                        serverToServerSocket.connect(sf::IpAddress::getLocalAddress(), port);
+                        informationToBroadcast.clear();
+                        sender = "s";
+                        informationToBroadcast << blockHash << killCommand << sender;
+                        serverToServerSocket.send(informationToBroadcast);
+                        informationToBroadcast.clear();
+                        // serverToServerSocket.disconnect();
+                        //NEW BLOCK TO ATTEMPT TO REPLICATE
+                        //if new blocks index is already taken, then reject, if not then accept. 
+                        Block block(1.1, blockChain.size(), 5.5, sender, blockChain[blockChain.size() -1].getBlockHash(), blockHash, sender);
+                        addBlock(block);
+                        blockChain[blockChain.size() - 1].printAll();
+                        //NEW BLOCK TO ATTEMPT TO REPLICATE
+                    } else if(sender.compare("s") == 0) {
+                        std::cout << "\nRECEIVED HASH FROM SERVER: " << blockHash << "\nKillCommand: " << killCommand << "\nSENDER: " << sender << "\n" << std::endl;
+                        Block block(1.1, blockChain.size(), 5.5, sender, blockChain[blockChain.size() -1].getBlockHash(), blockHash, sender);
+                        addBlock(block);
+                        //NEW BLOCK REPLICATED
+                        blockChain[blockChain.size() - 1].printAll();
+                        //NEW BLOCK REPLICATED
+                        informationToBroadcast.clear();
+                    }
+
+                }
+                // informationToBroadcast >> blockHash >> killCommand;
+
             }
             initialConnection = false;
             killCommand = 0;
+            // clientListeningSocket.accept(serverToServerSocket);
+
         }
 }

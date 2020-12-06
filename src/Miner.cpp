@@ -7,7 +7,9 @@ Miner::Miner(int blockIndexPassed, const std::string &blockDataPassed, const int
 }
 
 void Miner::printAll() {
+    std::cout << "Printed Value: *****************************************************" << std::endl;
     std::cout << "BLOCK INDEX: " << blockIndex << "\nBLOCK DATA: " << blockData << "\nBLOCK MINING DIFFICULTY: " << blockMiningDifficulity << "\nBLOCK CREATION TIME: " << creationTime << "\nBLOCK NONCE: " << blockNOnce << std::endl;
+    std::cout << "Printed Value: *****************************************************\n" << std::endl;
 }
 
 void Miner::mineBlock(const std::string previousHash) {

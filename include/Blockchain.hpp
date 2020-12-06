@@ -17,6 +17,7 @@ class Blockchain {
         int serverId;
         sf::TcpListener clientListeningSocket; 
         sf::TcpSocket serverConnectionToClient;
+        sf::TcpSocket serverToServerSocket;
         sf::Socket::Status serverStatus;
         std::unique_ptr<sf::TcpSocket> otherServerSockets;
         std::map<int , struct ServerData> serverInfo;
@@ -30,7 +31,7 @@ class Blockchain {
         //vector of ips
         //vector of ports 
     public:
-        Blockchain();
+        Blockchain(int port);
         // ~Blockchain();
         void addBlock(const Block& blockToBeAdded); //Method to add a block to the Server. 
         void sendBlock(); //This is the method to broadcast a block to other servers. 
