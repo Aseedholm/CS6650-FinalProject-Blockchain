@@ -2,7 +2,7 @@
 
 Blockchain::Blockchain(int port) {
     Block genesisBlock(0.0, 0, 0.0, "Genesis Block", "0", "1a2b3c4d5e6f7g8h9i", "Genesis Block");
-    genesisBlock.printAll();
+    // genesisBlock.printAll();
     addBlock(genesisBlock);
     informationToBroadcast.clear();
     // std::cout << blockChain.size() << std::endl;
@@ -14,7 +14,25 @@ Blockchain::Blockchain(int port) {
     
 }
 
+void Blockchain::setSocketVector() {
+    int mapSize = (int)serverInfo.size();
+    for (int i = 0; i < mapSize; i++) {
+        std::unique_ptr<sf::TcpSocket> socketToAdd = std::unique_ptr<sf::TcpSocket>(new sf::TcpSocket);
+        otherServerSockets.push_back(std::move(socketToAdd));
+    }
+}
 
+void Blockchain::connectAndSend() {
+    std::map<int , struct ServerData>::iterator it = serverInfo.begin();
+    int iterator = 0;
+    for (it; it != serverInfo.end(); it++) {
+        otherServerSockets[iterator]->connect(it->second.ipAddress, it->second.portNumber);
+        otherServerSockets[iterator]->send(informationToBroadcast);
+        //may want to disconnect sockets after sending information.
+        iterator+=1;
+
+    }
+}
 void Blockchain::addBlock(const Block& block){
     blockChain.push_back(block);
 }
@@ -34,7 +52,7 @@ void Blockchain::sendInformationToClient() {
     informationToBroadcast.clear();
 }
 
-void Blockchain::receiveInformationFromClient(int port) {
+void Blockchain::receiveInformationFromClient() {
     
     // serverConnectionToClient.setBlocking(false);
     // while(serverStatus == sf::Socket::Done) {
@@ -60,11 +78,12 @@ void Blockchain::receiveInformationFromClient(int port) {
                     if (sender.compare("c") == 0) {
                         std::cout << "\nRECEIVED HASH FROM CLIENT: " << blockHash << "\nKillCommand: " << killCommand << "\nSENDER: " << sender << "\n" << std::endl;
                         // serverConnectionToClient.disconnect();
-                        serverToServerSocket.connect(sf::IpAddress::getLocalAddress(), port);
+                        // serverToServerSocket.connect(sf::IpAddress::getLocalAddress(), port);
                         informationToBroadcast.clear();
                         sender = "s";
                         informationToBroadcast << blockHash << killCommand << sender;
-                        serverToServerSocket.send(informationToBroadcast);
+                        // serverToServerSocket.send(informationToBroadcast);
+                        connectAndSend();
                         informationToBroadcast.clear();
                         // serverToServerSocket.disconnect();
                         //NEW BLOCK TO ATTEMPT TO REPLICATE
