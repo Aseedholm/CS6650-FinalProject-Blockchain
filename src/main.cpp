@@ -31,7 +31,7 @@ int main(int argc, char const *argv[])
 
     packetP >> index >> previousHash;
 
-    std::cout <<"\n\nFROM SERVER: \nIndex: " << index << "\nPrevious Hash: " << previousHash << std::endl;
+    std::cout <<"FROM SERVER: \nIndex: " << index << "\nPrevious Hash: " << previousHash << std::endl;
     //Client to Server connection ************************************************************************************
 
 
@@ -41,7 +41,7 @@ int main(int argc, char const *argv[])
     std::cout <<"Previous Hash: " << previousHash << std::endl;
     std::cout << "Mining Block 1 ..." << std::endl; 
     miner.mineBlock(previousHash);
-    std::cout << "\nMinning Done *****************************************************" << std::endl;       
+    std::cout << "Minning Done *****************************************************" << std::endl;       
     miner.printAll();
     std::cout << "Printed Value: *****************************************************\n" << std::endl;
 
