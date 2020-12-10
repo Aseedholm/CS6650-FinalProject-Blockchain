@@ -4,6 +4,7 @@
 #include <SFML/Network.hpp>
 #include <vector>
 #include <map>
+#include <iterator>
 
 #include "Block.hpp"
 
@@ -19,7 +20,7 @@ class Blockchain {
         sf::TcpSocket serverConnectionToClient;
         sf::TcpSocket serverToServerSocket;
         sf::Socket::Status serverStatus;
-        std::unique_ptr<sf::TcpSocket> otherServerSockets;
+        std::vector<std::unique_ptr<sf::TcpSocket>> otherServerSockets;
         std::map<int , struct ServerData> serverInfo;
         int portListeningAtNumber;
 
@@ -33,10 +34,12 @@ class Blockchain {
     public:
         Blockchain(int port);
         // ~Blockchain();
+        void setSocketVector(); //Method that extra info from map and makes sockets.
+        void connectAndSend(); //Method will connect this server to other server's listening sockets and send information.
         void addBlock(const Block& blockToBeAdded); //Method to add a block to the Server. 
         void sendBlock(); //This is the method to broadcast a block to other servers. 
         void sendInformationToClient(); //Method will send the client the index of the block they are to mine and the previous hash. 
-        void receiveInformationFromClient(int port); //While loop of receiving information. 
+        void receiveInformationFromClient(); //While loop of receiving information. 
         void setServerInfoData(sf::IpAddress ipAddressPassed, int portNumberPassed, int otherServerId);
 
     //one socket for client - server listening for client.
