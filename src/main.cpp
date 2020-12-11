@@ -16,6 +16,7 @@ int main(int argc, char const *argv[])
     //Client to Server connection
     sf::Socket::Status sendToServerStatus;
     sf::TcpSocket sendToServer;
+    // sendToServer.setBlocking(false);
     sf::IpAddress ipAddress;
     ipAddress.getLocalAddress();
     sendToServerStatus = sendToServer.connect(ipAddress, port);

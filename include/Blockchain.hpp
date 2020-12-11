@@ -17,6 +17,7 @@ class Blockchain {
     private:
         int serverId;
         sf::TcpListener listeningSocket; 
+        sf::TcpListener serverCommunicationSocket;
         sf::TcpSocket connectionSocket;
         sf::Socket::Status serverStatus;
         std::vector<std::unique_ptr<sf::TcpSocket>> otherServerSockets;
@@ -25,6 +26,7 @@ class Blockchain {
 
         std::vector<Block> blockChain; //log of blocks
         sf::Packet informationToBroadcast;
+        sf::Packet serverResponsePacket;
 
         bool initialConnection; 
 
@@ -42,6 +44,7 @@ class Blockchain {
         void setServerInfoData(sf::IpAddress ipAddressPassed, int portNumberPassed, int otherServerId);
         void receiveRequestFromClient();
         void receiveRequestFromServer();
+        void sendMessage(int portNumberPassed);
 
         void printBlockChain();
 

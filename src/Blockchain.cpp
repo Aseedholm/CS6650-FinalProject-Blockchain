@@ -5,9 +5,12 @@ Blockchain::Blockchain(int port) {
     // genesisBlock.printAll();
     addBlock(genesisBlock);
     informationToBroadcast.clear();
+    serverResponsePacket.clear();
     initialConnection = false;
     serverPort = port;
     serverStatus = listeningSocket.listen(serverPort);
+    // serverCommunicationSocket.setBlocking(false);
+    // serverCommunicationSocket.listen(serverPort);
     
 }
 
@@ -26,6 +29,13 @@ void Blockchain::connectAndSend() {
         otherServerSockets[iterator]->connect(it->second.ipAddress, it->second.portNumber);
         otherServerSockets[iterator]->send(informationToBroadcast);
         //may want to disconnect sockets after sending information.
+
+        serverResponsePacket.clear();
+        otherServerSockets[iterator]->receive(serverResponsePacket);
+        std::string response;
+        serverResponsePacket >> response;
+        std::cout << "SERVER: " << it->second.portNumber << " RESPONSE: " << response << std::endl;
+
         iterator+=1;
 
     }
@@ -131,12 +141,25 @@ void Blockchain::receiveRequestFromServer() {
         informationToBroadcast.clear();
         Block block(0.0, blockIndex, creationTime, clientData, previousHashPassed, minedHash, sendingServerPort);
         if(blockChain.size() == blockIndex) { 
+
+            serverResponsePacket.clear();
+            serverResponsePacket << "Accepted";
+            // connectionSocket.send(serverResponsePacket);
+            sendMessage(std::stoi(sendingServerPort));
+            serverResponsePacket.clear();
+
             addBlock(block);
             std::cout << "**********************FROM OTHER SERVER**********************" << std::endl;
             blockChain[blockChain.size() - 1].printAll();
             std::cout << "**********************FROM OTHER SERVER**********************" << std::endl;
         } else {
             //send reject message to Server that sent message. 
+
+            serverResponsePacket.clear();
+            serverResponsePacket << "Rejected";
+            sendMessage(std::stoi(sendingServerPort));
+            // connectionSocket.send(serverResponsePacket);
+            serverResponsePacket.clear();
         }
         
 
@@ -144,6 +167,28 @@ void Blockchain::receiveRequestFromServer() {
     }
 }
 
+void Blockchain::sendMessage(int portNumberPassed) {
+    // std::map<int , struct ServerData>::iterator it = serverInfo.begin();
+    // int iterator = 0;
+    // for (it; it != serverInfo.end(); it++) {
+    //     if(it->second.portNumber == portNumberPassed) {
+    //         otherServerSockets[iterator]->connect(it->second.ipAddress, it->second.portNumber);
+    //         otherServerSockets[iterator]->send(serverResponsePacket);
+    //     }
+
+    //     // //may want to disconnect sockets after sending information.
+
+    //     // serverResponsePacket.clear();
+    //     // otherServerSockets[iterator]->receive(serverResponsePacket);
+    //     // std::string response;
+    //     // serverResponsePacket >> response;
+    //     // std::cout << "SERVER: " << it->second.portNumber << " RESPONSE: " << response << std::endl;
+
+    //     iterator+=1;
+
+    // }
+    connectionSocket.send(serverResponsePacket);
+}
 
 void Blockchain::receiveInformation() {
 
