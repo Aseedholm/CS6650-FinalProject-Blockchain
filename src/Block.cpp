@@ -1,6 +1,6 @@
 #include "Block.hpp"
 
-Block::Block(double timeSpentMiningPassed, int blockIndexPassed, double creationTimePassed,
+Block::Block(double timeSpentMiningPassed, int blockIndexPassed, std::string creationTimePassed,
      std::string dataPassed, std::string previousHashPassed, std::string blockHashPassed, std::string clientNamePassed) {
     timeSpentMining = timeSpentMiningPassed; //total time spent mining. 
     blockIndex = blockIndexPassed; //index of block in blockchain. 
@@ -17,10 +17,10 @@ std::string Block::getBlockHash() {
 }
 
 void Block::printAll() {
-    std::cout << "\nTime Spent Minning: " << timeSpentMining  
+    std::cout << "Time Spent Minning: " << timeSpentMining  
             << "\nBlock Index: " << blockIndex 
             << "\nCreation Time: " << creationTime 
-            << "\nData: " << data 
+            << "Data: " << data 
             << "\nPrevious Hash: " << previousHash 
             << "\nThis hash: " << blockHash 
             << "\nClient Name: " << clientName << std::endl;

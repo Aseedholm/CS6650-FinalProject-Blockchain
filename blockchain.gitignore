@@ -1,0 +1,15 @@
+#Lab 2 Task 1
+#Files to be ignored .o, .out, .app, .exe, .so, .dylib, .dll
+
+#Compiled Object File
+*.o
+
+#Compiled Dynamic Libraries
+*.so
+*.dylib
+*.dll
+
+# Executables
+*.exe
+*.out
+*.app

@@ -19,10 +19,11 @@ int main(int argc, char const *argv[]) {
         blockchain.setServerInfoData(ipAddress, std::atoi(argv[i+1]), i);
         std::cout << "\nOTHER SERVER's Ip Address: " << argv[i] << "\nOTHER SERVER's PORT #: " << argv[i+1] << std::endl;  
     }
+    std::cout <<"\n"<<std::endl;
     blockchain.setSocketVector();
 
     // int port = std::atoi(argv[2]);
-    blockchain.receiveInformationFromClient();
+    blockchain.receiveInformation();
     // std::cout << "PAST BLOCK CHAIN" << std::endl; 
 
 }

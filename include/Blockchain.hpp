@@ -16,13 +16,12 @@ struct ServerData {
 class Blockchain {
     private:
         int serverId;
-        sf::TcpListener clientListeningSocket; 
-        sf::TcpSocket serverConnectionToClient;
-        sf::TcpSocket serverToServerSocket;
+        sf::TcpListener listeningSocket; 
+        sf::TcpSocket connectionSocket;
         sf::Socket::Status serverStatus;
         std::vector<std::unique_ptr<sf::TcpSocket>> otherServerSockets;
         std::map<int , struct ServerData> serverInfo;
-        int portListeningAtNumber;
+        int serverPort;
 
         std::vector<Block> blockChain; //log of blocks
         sf::Packet informationToBroadcast;
@@ -39,8 +38,12 @@ class Blockchain {
         void addBlock(const Block& blockToBeAdded); //Method to add a block to the Server. 
         void sendBlock(); //This is the method to broadcast a block to other servers. 
         void sendInformationToClient(); //Method will send the client the index of the block they are to mine and the previous hash. 
-        void receiveInformationFromClient(); //While loop of receiving information. 
+        void receiveInformation(); //While loop of receiving information. 
         void setServerInfoData(sf::IpAddress ipAddressPassed, int portNumberPassed, int otherServerId);
+        void receiveRequestFromClient();
+        void receiveRequestFromServer();
+
+        void printBlockChain();
 
     //one socket for client - server listening for client.
 

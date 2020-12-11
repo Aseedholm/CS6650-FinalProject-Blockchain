@@ -9,14 +9,14 @@ private:
     //std::chrono duration<double>; 
     double timeSpentMining; //total time spent mining. 
     int blockIndex; //index of block in blockchain. 
-    double creationTime; //creation time of block determined by when mining started. 
+    std::string creationTime; //creation time of block determined by when mining started. 
     std::string data; //Data client sent to the blockchain to store in a block.
     std::string previousHash; //previousHash of last block in the blockchain. 
     std::string blockHash; //current hash of this block 
     std::string clientName; //name of the client who this block belongs to.
 
 public:
-    Block(double timeSpentMiningPassed, int blockIndexPassed, double creationTimePassed,
+    Block(double timeSpentMiningPassed, int blockIndexPassed, std::string creationTimePassed,
      std::string dataPassed, std::string previousHashPassed, std::string blockHashPassed, std::string clientNamePassed);
 
     // ~Block();
@@ -26,7 +26,7 @@ public:
     //getters
     double getTimeSpentMining();
     int getBlockIndex();
-    double getCreationTime();
+    std::string getCreationTime();
     std::string getDataPassed();
     std::string getPreviousHash();
     std::string getBlockHash();
