@@ -31,6 +31,8 @@ void Blockchain::connectAndSend() {
         //may want to disconnect sockets after sending information.
 
         serverResponsePacket.clear();
+        // otherServerSockets[iterator]->receive(serverResponsePacket);
+        listeningSocket.accept(*otherServerSockets[iterator]);
         otherServerSockets[iterator]->receive(serverResponsePacket);
         std::string response;
         serverResponsePacket >> response;
@@ -168,26 +170,26 @@ void Blockchain::receiveRequestFromServer() {
 }
 
 void Blockchain::sendMessage(int portNumberPassed) {
-    // std::map<int , struct ServerData>::iterator it = serverInfo.begin();
-    // int iterator = 0;
-    // for (it; it != serverInfo.end(); it++) {
-    //     if(it->second.portNumber == portNumberPassed) {
-    //         otherServerSockets[iterator]->connect(it->second.ipAddress, it->second.portNumber);
-    //         otherServerSockets[iterator]->send(serverResponsePacket);
-    //     }
+    std::map<int , struct ServerData>::iterator it = serverInfo.begin();
+    int iterator = 0;
+    for (it; it != serverInfo.end(); it++) {
+        if(it->second.portNumber == portNumberPassed) {
+            otherServerSockets[iterator]->connect(it->second.ipAddress, it->second.portNumber);
+            otherServerSockets[iterator]->send(serverResponsePacket);
+        }
 
-    //     // //may want to disconnect sockets after sending information.
+        // //may want to disconnect sockets after sending information.
 
-    //     // serverResponsePacket.clear();
-    //     // otherServerSockets[iterator]->receive(serverResponsePacket);
-    //     // std::string response;
-    //     // serverResponsePacket >> response;
-    //     // std::cout << "SERVER: " << it->second.portNumber << " RESPONSE: " << response << std::endl;
+        // serverResponsePacket.clear();
+        // otherServerSockets[iterator]->receive(serverResponsePacket);
+        // std::string response;
+        // serverResponsePacket >> response;
+        // std::cout << "SERVER: " << it->second.portNumber << " RESPONSE: " << response << std::endl;
 
-    //     iterator+=1;
+        iterator+=1;
 
-    // }
-    connectionSocket.send(serverResponsePacket);
+    }
+    // connectionSocket.send(serverResponsePacket);
 }
 
 void Blockchain::receiveInformation() {
