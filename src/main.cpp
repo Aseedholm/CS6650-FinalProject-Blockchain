@@ -9,7 +9,7 @@ int main(int argc, char const *argv[])
 {
     int port = std::atoi(argv[1]);
     int randomInt = rand();
-    int difficulty = 1;
+    int difficulty = 5;
     /* code */
 
 

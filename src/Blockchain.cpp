@@ -84,12 +84,19 @@ void Blockchain::receiveRequestFromClient() {
                 informationToBroadcast << sender << command << minedHash << clientData 
                 << creationTime << previousHashPassed << killCommand << blockIndex << std::to_string(serverPort);
                 connectAndSend();
+                
                 informationToBroadcast.clear();
                 Block block(0.0, blockIndex, creationTime, clientData, previousHashPassed, minedHash, std::to_string(serverPort));
-                addBlock(block);
-                std::cout << "\nBelow is block being sent to other servers." << std::endl;
-                blockChain[blockChain.size() - 1].printAll();
-                //NEW BLOCK TO ATTEMPT TO REPLICATE
+                if(blockChain.size() == blockIndex) {
+                    addBlock(block);
+                    std::cout << "\nBelow is block being sent to other servers." << std::endl;
+                    blockChain[blockChain.size() - 1].printAll();
+                }
+
+                //Set up a receive call here. 
+                //if server accepted request move on
+                //if server rejected request remove the newly added block, then it will add other block.
+
             }           
         }
         else if (command == 1) {
@@ -123,10 +130,16 @@ void Blockchain::receiveRequestFromServer() {
 
         informationToBroadcast.clear();
         Block block(0.0, blockIndex, creationTime, clientData, previousHashPassed, minedHash, sendingServerPort);
-        addBlock(block);
-        std::cout << "**********************FROM OTHER SERVER**********************" << std::endl;
-        blockChain[blockChain.size() - 1].printAll();
-        std::cout << "**********************FROM OTHER SERVER**********************" << std::endl;
+        if(blockChain.size() == blockIndex) { 
+            addBlock(block);
+            std::cout << "**********************FROM OTHER SERVER**********************" << std::endl;
+            blockChain[blockChain.size() - 1].printAll();
+            std::cout << "**********************FROM OTHER SERVER**********************" << std::endl;
+        } else {
+            //send reject message to Server that sent message. 
+        }
+        
+
         //NEW BLOCK TO ATTEMPT TO REPLICATE
     }
 }
