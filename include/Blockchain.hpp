@@ -45,6 +45,7 @@ class Blockchain {
         void receiveRequestFromClient();
         void receiveRequestFromServer();
         void sendMessage(int portNumberPassed);
+        void replaceBlock();
 
         void printBlockChain();
 

@@ -16,6 +16,26 @@ std::string Block::getBlockHash() {
     return blockHash;
 }
 
+int Block::getBlockIndex() {
+    return blockIndex;
+}
+
+std::string Block::getCreationTime() {
+    return creationTime;
+}
+
+std::string Block::getDataPassed() {
+    return data;
+}
+
+std::string Block::getPreviousHash() {
+    return previousHash;
+}
+
+std::string Block::getClientName(){
+    return clientName;
+}
+
 void Block::printAll() {
     std::cout << "Time Spent Minning: " << timeSpentMining  
             << "\nBlock Index: " << blockIndex 

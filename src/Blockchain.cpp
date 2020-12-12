@@ -21,6 +21,23 @@ void Blockchain::setSocketVector() {
         otherServerSockets.push_back(std::move(socketToAdd));
     }
 }
+void Blockchain::replaceBlock() {
+
+    std::string minedHash;
+    std::string clientData;
+    std::string creationTime;
+    std::string previousHashPassed;
+    sf::Uint32 killCommand;
+    sf::Uint32 blockIndex;
+    std::string sendingServerPort;
+
+    if(serverResponsePacket >> minedHash >> clientData >> creationTime >> previousHashPassed >> killCommand >> blockIndex >> sendingServerPort) {
+        Block block(0.0, blockIndex, creationTime, clientData, previousHashPassed, minedHash, sendingServerPort);
+        addBlock(block);
+    }
+
+
+}
 
 void Blockchain::connectAndSend() {
     std::map<int , struct ServerData>::iterator it = serverInfo.begin();
@@ -36,10 +53,15 @@ void Blockchain::connectAndSend() {
         otherServerSockets[iterator]->receive(serverResponsePacket);
         std::string response;
         serverResponsePacket >> response;
-        std::cout << "SERVER: " << it->second.portNumber << " RESPONSE: " << response << std::endl;
+        // std::cout << "SERVER: " << it->second.portNumber << " RESPONSE: " << response << std::endl;
+        if(response.compare("Rejected")==0) {
+            std::cout << "SERVER: " << it->second.portNumber << " RESPONSE: " << response << std::endl;
+            replaceBlock();
+        }
 
+// serverResponsePacket.clear();
         iterator+=1;
-
+        serverResponsePacket.clear();
     }
 }
 void Blockchain::addBlock(const Block& block){
@@ -128,6 +150,7 @@ void Blockchain::receiveRequestFromServer() {
     sf::Uint32 killCommand;
     sf::Uint32 blockIndex;
     std::string sendingServerPort;
+    std::string portToPass;
 
     if(informationToBroadcast >> command >> minedHash >> clientData >> creationTime >> previousHashPassed >> killCommand >> blockIndex >> sendingServerPort) {
         std::cout << "RECEIVED HASH FROM SERVER: " << minedHash 
@@ -156,9 +179,17 @@ void Blockchain::receiveRequestFromServer() {
             std::cout << "**********************FROM OTHER SERVER**********************" << std::endl;
         } else {
             //send reject message to Server that sent message. 
+            minedHash = blockChain[blockChain.size() - 1].getBlockHash();
+            clientData = blockChain[blockChain.size() - 1].getDataPassed();
+            creationTime = blockChain[blockChain.size() - 1].getCreationTime();
+            previousHashPassed = blockChain[blockChain.size() - 1].getPreviousHash();
+            killCommand = 0;
+            blockIndex = sf::Uint32(blockChain[blockChain.size() - 1].getBlockIndex());
+            portToPass = blockChain[blockChain.size() - 1].getClientName();
 
             serverResponsePacket.clear();
-            serverResponsePacket << "Rejected";
+            serverResponsePacket << "Rejected" << minedHash << clientData << creationTime << previousHashPassed << killCommand << blockIndex << portToPass;
+            //serverResponsePacket << "Rejected";
             sendMessage(std::stoi(sendingServerPort));
             // connectionSocket.send(serverResponsePacket);
             serverResponsePacket.clear();
