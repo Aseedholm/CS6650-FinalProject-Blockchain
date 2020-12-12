@@ -1,16 +1,16 @@
 #include "Blockchain.hpp"
 
 Blockchain::Blockchain(int port) {
-    Block genesisBlock(0.0, 0, 0.0, "Genesis Block", "0", "1a2b3c4d5e6f7g8h9i", "Genesis Block");
+    Block genesisBlock(0.0, 0, "0.0", "Genesis Block", "0", "1a2b3c4d5e6f7g8h9i", "Genesis Block");
     // genesisBlock.printAll();
     addBlock(genesisBlock);
     informationToBroadcast.clear();
-    // std::cout << blockChain.size() << std::endl;
-    // blockChain[blockChain.size() - 1].printAll();
-    // serverConnectionToClient;
+    serverResponsePacket.clear();
     initialConnection = false;
-    serverToServerSocket.setBlocking(false);
-    serverStatus = clientListeningSocket.listen(port);
+    serverPort = port;
+    serverStatus = listeningSocket.listen(serverPort);
+    // serverCommunicationSocket.setBlocking(false);
+    // serverCommunicationSocket.listen(serverPort);
     
 }
 
@@ -21,23 +21,56 @@ void Blockchain::setSocketVector() {
         otherServerSockets.push_back(std::move(socketToAdd));
     }
 }
+void Blockchain::replaceBlock() {
+
+    std::string minedHash;
+    std::string clientData;
+    std::string creationTime;
+    std::string previousHashPassed;
+    sf::Uint32 killCommand;
+    sf::Uint32 blockIndex;
+    std::string sendingServerPort;
+
+    if(serverResponsePacket >> minedHash >> clientData >> creationTime >> previousHashPassed >> killCommand >> blockIndex >> sendingServerPort) {
+        Block block(0.0, blockIndex, creationTime, clientData, previousHashPassed, minedHash, sendingServerPort);
+        addBlock(block);
+    }
+
+
+}
 
 void Blockchain::connectAndSend() {
     std::map<int , struct ServerData>::iterator it = serverInfo.begin();
     int iterator = 0;
     for (it; it != serverInfo.end(); it++) {
         otherServerSockets[iterator]->connect(it->second.ipAddress, it->second.portNumber);
+        // otherServerSockets[iterator]->setBlocking(false);
         otherServerSockets[iterator]->send(informationToBroadcast);
         //may want to disconnect sockets after sending information.
-        iterator+=1;
 
+        serverResponsePacket.clear();
+        // otherServerSockets[iterator]->receive(serverResponsePacket);
+        listeningSocket.accept(*otherServerSockets[iterator]);
+        otherServerSockets[iterator]->receive(serverResponsePacket);
+        std::string response;
+        serverResponsePacket >> response;
+        // std::cout << "SERVER: " << it->second.portNumber << " RESPONSE: " << response << std::endl;
+        if(response.compare("Rejected")==0) {
+            // std::cout << "SERVER: " << it->second.portNumber << " RESPONSE: " << response << std::endl;
+            replaceBlock();
+        }
+
+// serverResponsePacket.clear();
+        iterator+=1;
+        serverResponsePacket.clear();
     }
 }
 void Blockchain::addBlock(const Block& block){
     blockChain.push_back(block);
+    std::cout << "A block has been added to the blockchain." << std::endl;
 }
 
-void Blockchain::setServerInfoData(sf::IpAddress ipAddressPassed, int portNumberPassed, int otherServerId){
+void Blockchain::setServerInfoData(sf::IpAddress ipAddressPassed, int portNumberPassed, int otherServerId) {
     ServerData data;
     data.ipAddress = ipAddressPassed;
     data.portNumber = portNumberPassed;
@@ -46,71 +79,190 @@ void Blockchain::setServerInfoData(sf::IpAddress ipAddressPassed, int portNumber
 
 
 void Blockchain::sendInformationToClient() {
-    std::cout << "Sending to client: BLOCK CHAIN SIZE: " << sf::Uint32(blockChain.size()) << "\nBLOCK CHAIN HASH: " << blockChain[blockChain.size() - 1].getBlockHash() << std::endl;
+    // std::cout << "Sending to client: BLOCK CHAIN SIZE: " 
+    //         << sf::Uint32(blockChain.size()) << "\nBLOCK CHAIN HASH: " 
+    //         << blockChain[blockChain.size() - 1].getBlockHash() 
+    //         << std::endl;
+    informationToBroadcast.clear();
     informationToBroadcast << sf::Uint32(blockChain.size()) << blockChain[blockChain.size() - 1].getBlockHash();
-    serverConnectionToClient.send(informationToBroadcast);
+    connectionSocket.send(informationToBroadcast);
     informationToBroadcast.clear();
 }
 
-void Blockchain::receiveInformationFromClient() {
-    
-    // serverConnectionToClient.setBlocking(false);
-    // while(serverStatus == sf::Socket::Done) {
+void Blockchain::receiveRequestFromClient() {
+    std::string sender;
+    sf::Uint32 command;
+    std::string minedHash;
+    std::string clientData;
+    std::string creationTime;
+    std::string previousHashPassed;
+    sf::Uint32 killCommand;
+    sf::Uint32 blockIndex;
+
+    if(informationToBroadcast >> command ) {
+
+        if (command == 0) {
+            if(informationToBroadcast >> minedHash 
+                >> clientData >> creationTime 
+                >> previousHashPassed >> killCommand >> blockIndex) 
+            {
+                // std::cout << "RECEIVED HASH FROM CLIENT: " << minedHash 
+                //         << "\nKillCommand: " << killCommand 
+                //         << "\nSENDER: " << sender 
+                //         << "\nCommand: " << command 
+                //         << "\nClient Data: " <<clientData
+                //         << "\nCreation Time: " << creationTime
+                //         << "Previous Hash Passed: " << previousHashPassed
+                //         << "\nBlock Index: " << blockIndex
+                //         << std::endl;
+                informationToBroadcast.clear();
+                sender = "s";
+                informationToBroadcast << sender << command << minedHash << clientData 
+                << creationTime << previousHashPassed << killCommand << blockIndex << std::to_string(serverPort);
+                connectAndSend();
+                
+                informationToBroadcast.clear();
+                Block block(0.0, blockIndex, creationTime, clientData, previousHashPassed, minedHash, std::to_string(serverPort));
+                if(blockChain.size() == blockIndex) {
+                    addBlock(block);
+                    // std::cout << "\nBelow is block being sent to other servers." << std::endl;
+                    // blockChain[blockChain.size() - 1].printAll();
+                }
+
+                //Set up a receive call here. 
+                //if server accepted request move on
+                //if server rejected request remove the newly added block, then it will add other block.
+
+            }           
+        }
+        else if (command == 1) {
+            printBlockChain();
+        }
+    }
+}
+
+
+void Blockchain::receiveRequestFromServer() {
+    std::string sender;
+    sf::Uint32 command;
+    std::string minedHash;
+    std::string clientData;
+    std::string creationTime;
+    std::string previousHashPassed;
+    sf::Uint32 killCommand;
+    sf::Uint32 blockIndex;
+    std::string sendingServerPort;
+    std::string portToPass;
+
+    if(informationToBroadcast >> command >> minedHash >> clientData >> creationTime >> previousHashPassed >> killCommand >> blockIndex >> sendingServerPort) {
+        // std::cout << "RECEIVED HASH FROM SERVER: " << minedHash 
+        // << "\nKillCommand: " << killCommand 
+        // << "\nSENDER: " << sender 
+        // << "\nCommand: " << command 
+        // << "\nClient Data: " <<clientData
+        // << "\nCreation Time: " << creationTime
+        // << "Previous Hash Passed: " << previousHashPassed
+        // << "Block Index: " << blockIndex 
+        // << "\nSending Server Port: " << sendingServerPort << std::endl;
+
+        informationToBroadcast.clear();
+        Block block(0.0, blockIndex, creationTime, clientData, previousHashPassed, minedHash, sendingServerPort);
+        if(blockChain.size() == blockIndex) { 
+
+            serverResponsePacket.clear();
+            serverResponsePacket << "Accepted";
+            // connectionSocket.send(serverResponsePacket);
+            sendMessage(std::stoi(sendingServerPort));
+            serverResponsePacket.clear();
+
+            addBlock(block);
+            // std::cout << "**********************FROM OTHER SERVER**********************" << std::endl;
+            // blockChain[blockChain.size() - 1].printAll();
+            // std::cout << "**********************FROM OTHER SERVER**********************" << std::endl;
+        } else {
+            //send reject message to Server that sent message. 
+            minedHash = blockChain[blockChain.size() - 1].getBlockHash();
+            clientData = blockChain[blockChain.size() - 1].getDataPassed();
+            creationTime = blockChain[blockChain.size() - 1].getCreationTime();
+            previousHashPassed = blockChain[blockChain.size() - 1].getPreviousHash();
+            killCommand = 0;
+            blockIndex = sf::Uint32(blockChain[blockChain.size() - 1].getBlockIndex());
+            portToPass = blockChain[blockChain.size() - 1].getClientName();
+
+            serverResponsePacket.clear();
+            serverResponsePacket << "Rejected" << minedHash << clientData << creationTime << previousHashPassed << killCommand << blockIndex << portToPass;
+            //serverResponsePacket << "Rejected";
+            sendMessage(std::stoi(sendingServerPort));
+            // connectionSocket.send(serverResponsePacket);
+            serverResponsePacket.clear();
+        }
+        
+
+        //NEW BLOCK TO ATTEMPT TO REPLICATE
+    }
+}
+
+void Blockchain::sendMessage(int portNumberPassed) {
+    std::map<int , struct ServerData>::iterator it = serverInfo.begin();
+    int iterator = 0;
+    for (it; it != serverInfo.end(); it++) {
+        if(it->second.portNumber == portNumberPassed) {
+            otherServerSockets[iterator]->connect(it->second.ipAddress, it->second.portNumber);
+            otherServerSockets[iterator]->send(serverResponsePacket);
+        }
+
+        // //may want to disconnect sockets after sending information.
+
+        // serverResponsePacket.clear();
+        // otherServerSockets[iterator]->receive(serverResponsePacket);
+        // std::string response;
+        // serverResponsePacket >> response;
+        // std::cout << "SERVER: " << it->second.portNumber << " RESPONSE: " << response << std::endl;
+
+        iterator+=1;
+
+    }
+    // connectionSocket.send(serverResponsePacket);
+}
+
+void Blockchain::receiveInformation() {
+
         std::string passedString;
         sf::Uint32 killCommand = 0;
+        sf::Uint32 command = 0;
         std::string blockHash;
         std::string sender;
-        
+        sf::Socket::Status status;
         while(true) {
-            clientListeningSocket.accept(serverConnectionToClient);
-            
-            while(killCommand == 0) {
-
-                if(initialConnection == false) {
+            status = listeningSocket.accept(connectionSocket);
+                if(status == 0) {
                     sendInformationToClient();
                     initialConnection = true;
                 }
-                
-                
-                serverConnectionToClient.receive(informationToBroadcast);
-                if(informationToBroadcast >> blockHash >> killCommand >> sender) {
-                    std::cout << "***************************************************************************************************************" << std::endl;
-                    if (sender.compare("c") == 0) {
-                        std::cout << "RECEIVED HASH FROM CLIENT: " << blockHash << "\nKillCommand: " << killCommand << "\nSENDER: " << sender << std::endl;
-                        // serverConnectionToClient.disconnect();
-                        // serverToServerSocket.connect(sf::IpAddress::getLocalAddress(), port);
-                        informationToBroadcast.clear();
-                        sender = "s";
-                        informationToBroadcast << blockHash << killCommand << sender;
-                        // serverToServerSocket.send(informationToBroadcast);
-                        connectAndSend();
-                        informationToBroadcast.clear();
-                        // serverToServerSocket.disconnect();
-                        //NEW BLOCK TO ATTEMPT TO REPLICATE
-                        //if new blocks index is already taken, then reject, if not then accept. 
-                        Block block(1.1, blockChain.size(), 5.5, sender, blockChain[blockChain.size() -1].getBlockHash(), blockHash, sender);
-                        addBlock(block);
-                        std::cout << "Below is block being sent to other servers." << std::endl;
-                        blockChain[blockChain.size() - 1].printAll();
-                        //NEW BLOCK TO ATTEMPT TO REPLICATE
-                    } else if(sender.compare("s") == 0) {
-                        std::cout << "RECEIVED HASH FROM SERVER: " << blockHash << "\nKillCommand: " << killCommand << "\nSENDER: " << sender << std::endl;
-                        Block block(1.1, blockChain.size(), 5.5, sender, blockChain[blockChain.size() -1].getBlockHash(), blockHash, sender);
-                        addBlock(block);
-                        //NEW BLOCK REPLICATED
-                        blockChain[blockChain.size() - 1].printAll();
-                        //NEW BLOCK REPLICATED
-                        informationToBroadcast.clear();
+                connectionSocket.receive(informationToBroadcast);
+                if(informationToBroadcast >> sender) {
+                    // std::cout << "**********************************************" << std::endl;
+                    if (sender.compare("c") == 0) 
+                    {
+                        receiveRequestFromClient();
+                    } 
+
+                    else if(sender.compare("s") == 0) 
+                    {
+                        receiveRequestFromServer();
                     }
-                std::cout << "***************************************************************************************************************" << std::endl;
-
+                    // std::cout << "**********************************************" << std::endl;
                 }
-                // informationToBroadcast >> blockHash >> killCommand;
-
-            }
-            initialConnection = false;
-            killCommand = 0;
-            // clientListeningSocket.accept(serverToServerSocket);
-
         }
+}
+
+void Blockchain::printBlockChain() {
+    std::cout << "*Printing Blockchain*" << std::endl;
+    std::vector<Block>::iterator itBegin = blockChain.begin();
+    std::vector<Block>::iterator itEnd = blockChain.end();
+    for(itBegin; itBegin != itEnd; itBegin++){
+        itBegin->printAll();
+        std::cout << "\n";
+    }
+    std::cout << "*Printing Blockchain*" << std::endl;
 }
