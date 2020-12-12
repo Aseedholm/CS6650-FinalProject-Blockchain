@@ -44,6 +44,7 @@ void Blockchain::connectAndSend() {
     int iterator = 0;
     for (it; it != serverInfo.end(); it++) {
         otherServerSockets[iterator]->connect(it->second.ipAddress, it->second.portNumber);
+        // otherServerSockets[iterator]->setBlocking(false);
         otherServerSockets[iterator]->send(informationToBroadcast);
         //may want to disconnect sockets after sending information.
 
