@@ -56,7 +56,7 @@ void Blockchain::connectAndSend() {
         serverResponsePacket >> response;
         // std::cout << "SERVER: " << it->second.portNumber << " RESPONSE: " << response << std::endl;
         if(response.compare("Rejected")==0) {
-            std::cout << "SERVER: " << it->second.portNumber << " RESPONSE: " << response << std::endl;
+            // std::cout << "SERVER: " << it->second.portNumber << " RESPONSE: " << response << std::endl;
             replaceBlock();
         }
 
@@ -67,6 +67,7 @@ void Blockchain::connectAndSend() {
 }
 void Blockchain::addBlock(const Block& block){
     blockChain.push_back(block);
+    std::cout << "A block has been added to the blockchain." << std::endl;
 }
 
 void Blockchain::setServerInfoData(sf::IpAddress ipAddressPassed, int portNumberPassed, int otherServerId) {
@@ -78,10 +79,10 @@ void Blockchain::setServerInfoData(sf::IpAddress ipAddressPassed, int portNumber
 
 
 void Blockchain::sendInformationToClient() {
-    std::cout << "Sending to client: BLOCK CHAIN SIZE: " 
-            << sf::Uint32(blockChain.size()) << "\nBLOCK CHAIN HASH: " 
-            << blockChain[blockChain.size() - 1].getBlockHash() 
-            << std::endl;
+    // std::cout << "Sending to client: BLOCK CHAIN SIZE: " 
+    //         << sf::Uint32(blockChain.size()) << "\nBLOCK CHAIN HASH: " 
+    //         << blockChain[blockChain.size() - 1].getBlockHash() 
+    //         << std::endl;
     informationToBroadcast.clear();
     informationToBroadcast << sf::Uint32(blockChain.size()) << blockChain[blockChain.size() - 1].getBlockHash();
     connectionSocket.send(informationToBroadcast);
@@ -105,15 +106,15 @@ void Blockchain::receiveRequestFromClient() {
                 >> clientData >> creationTime 
                 >> previousHashPassed >> killCommand >> blockIndex) 
             {
-                std::cout << "RECEIVED HASH FROM CLIENT: " << minedHash 
-                        << "\nKillCommand: " << killCommand 
-                        << "\nSENDER: " << sender 
-                        << "\nCommand: " << command 
-                        << "\nClient Data: " <<clientData
-                        << "\nCreation Time: " << creationTime
-                        << "Previous Hash Passed: " << previousHashPassed
-                        << "\nBlock Index: " << blockIndex
-                        << std::endl;
+                // std::cout << "RECEIVED HASH FROM CLIENT: " << minedHash 
+                //         << "\nKillCommand: " << killCommand 
+                //         << "\nSENDER: " << sender 
+                //         << "\nCommand: " << command 
+                //         << "\nClient Data: " <<clientData
+                //         << "\nCreation Time: " << creationTime
+                //         << "Previous Hash Passed: " << previousHashPassed
+                //         << "\nBlock Index: " << blockIndex
+                //         << std::endl;
                 informationToBroadcast.clear();
                 sender = "s";
                 informationToBroadcast << sender << command << minedHash << clientData 
@@ -124,8 +125,8 @@ void Blockchain::receiveRequestFromClient() {
                 Block block(0.0, blockIndex, creationTime, clientData, previousHashPassed, minedHash, std::to_string(serverPort));
                 if(blockChain.size() == blockIndex) {
                     addBlock(block);
-                    std::cout << "\nBelow is block being sent to other servers." << std::endl;
-                    blockChain[blockChain.size() - 1].printAll();
+                    // std::cout << "\nBelow is block being sent to other servers." << std::endl;
+                    // blockChain[blockChain.size() - 1].printAll();
                 }
 
                 //Set up a receive call here. 
@@ -154,15 +155,15 @@ void Blockchain::receiveRequestFromServer() {
     std::string portToPass;
 
     if(informationToBroadcast >> command >> minedHash >> clientData >> creationTime >> previousHashPassed >> killCommand >> blockIndex >> sendingServerPort) {
-        std::cout << "RECEIVED HASH FROM SERVER: " << minedHash 
-        << "\nKillCommand: " << killCommand 
-        << "\nSENDER: " << sender 
-        << "\nCommand: " << command 
-        << "\nClient Data: " <<clientData
-        << "\nCreation Time: " << creationTime
-        << "Previous Hash Passed: " << previousHashPassed
-        << "Block Index: " << blockIndex 
-        << "\nSending Server Port: " << sendingServerPort << std::endl;
+        // std::cout << "RECEIVED HASH FROM SERVER: " << minedHash 
+        // << "\nKillCommand: " << killCommand 
+        // << "\nSENDER: " << sender 
+        // << "\nCommand: " << command 
+        // << "\nClient Data: " <<clientData
+        // << "\nCreation Time: " << creationTime
+        // << "Previous Hash Passed: " << previousHashPassed
+        // << "Block Index: " << blockIndex 
+        // << "\nSending Server Port: " << sendingServerPort << std::endl;
 
         informationToBroadcast.clear();
         Block block(0.0, blockIndex, creationTime, clientData, previousHashPassed, minedHash, sendingServerPort);
@@ -175,9 +176,9 @@ void Blockchain::receiveRequestFromServer() {
             serverResponsePacket.clear();
 
             addBlock(block);
-            std::cout << "**********************FROM OTHER SERVER**********************" << std::endl;
-            blockChain[blockChain.size() - 1].printAll();
-            std::cout << "**********************FROM OTHER SERVER**********************" << std::endl;
+            // std::cout << "**********************FROM OTHER SERVER**********************" << std::endl;
+            // blockChain[blockChain.size() - 1].printAll();
+            // std::cout << "**********************FROM OTHER SERVER**********************" << std::endl;
         } else {
             //send reject message to Server that sent message. 
             minedHash = blockChain[blockChain.size() - 1].getBlockHash();
@@ -240,7 +241,7 @@ void Blockchain::receiveInformation() {
                 }
                 connectionSocket.receive(informationToBroadcast);
                 if(informationToBroadcast >> sender) {
-                    std::cout << "**********************************************" << std::endl;
+                    // std::cout << "**********************************************" << std::endl;
                     if (sender.compare("c") == 0) 
                     {
                         receiveRequestFromClient();
@@ -250,7 +251,7 @@ void Blockchain::receiveInformation() {
                     {
                         receiveRequestFromServer();
                     }
-                    std::cout << "**********************************************" << std::endl;
+                    // std::cout << "**********************************************" << std::endl;
                 }
         }
 }
